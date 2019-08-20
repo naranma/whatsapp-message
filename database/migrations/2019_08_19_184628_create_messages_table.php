@@ -17,7 +17,7 @@ class CreateMessagesTable extends Migration
             $table->bigIncrements('id');
             $table->string('name');
             $table->string('description')->nullable();
-            $table->string('phone');
+            $table->string('phone')->nullable();
             $table->string('session_id')->nullable();
             $table->string('status')->nullable();
             $table->boolean('active')->nullable()->default(true);

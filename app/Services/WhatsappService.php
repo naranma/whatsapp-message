@@ -53,29 +53,42 @@ class WhatsappService
 
     public function createWhatsappSession()
     {
-        $this->driver->get('https://web.whatsapp.com/');
+        try{
+            $this->driver->get('https://web.whatsapp.com/');
 
-        $this->driver->wait(40)->until(
-            WebDriverExpectedCondition::presenceOfAllElementsLocatedBy(
-                WebDriverBy::xpath('//input[@name="rememberMe"]')
-            )
-        );
+            $this->driver->wait(40)->until(
+                WebDriverExpectedCondition::presenceOfAllElementsLocatedBy(
+                    WebDriverBy::xpath('//input[@name="rememberMe"]')
+                )
+            );
+        } catch( \Exception $e){
+            return false;
+        }
 
         return $this;
     }
 
     public function getWhatsappQRCodeFile()
     {
-        $screenshot_file = $this->takeScreenshot($this->driver->findElement(WebDriverBy::xpath('//img[@alt="Scan me!"]')));
+        $screenshot_file = null;
+
+        if ($this->driver->findElements(WebDriverBy::xpath('//img[@alt="Scan me!"]'))){
+            $screenshot_file = $this->takeScreenshot($this->driver->findElement(WebDriverBy::xpath('//img[@alt="Scan me!"]')));
+        }
 
         return $screenshot_file;
     }
    
     public function getWhatsappQRCodeBase64()
     {
-        $imageBase64 = $this->driver->findElement(WebDriverBy::xpath('//img[@alt="Scan me!"]'));
+        $imageBase64 = null;
 
-        return $imageBase64->getAttribute('src');
+        if ($this->driver->findElements(WebDriverBy::xpath('//img[@alt="Scan me!"]'))){
+            $imageBase64 = $this->driver->findElement(WebDriverBy::xpath('//img[@alt="Scan me!"]'));
+            return $imageBase64->getAttribute('src');
+        }
+
+        return $imageBase64;
     }
 
     public function sendMessage($number, $message)
@@ -104,9 +117,14 @@ class WhatsappService
         $input_box->click();
 
         // set message and ENTER
-        $text = $message;
+        //$message
+        $lines = explode("\r\n", $message);
+        $text = "";
+        foreach ($lines as $line){
+            $input_box->sendKeys( $line . WebDriverKeys::SHIFT . WebDriverKeys::ENTER);
+        }
 
-        $input_box->sendKeys($text);
+        //$input_box->sendKeys($text);
         $input_box->sendKeys(WebDriverKeys::ENTER);
 
 
